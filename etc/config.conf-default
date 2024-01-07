@@ -1,0 +1,13 @@
+db_host <REPLACEME> # database hostname
+db_name <REPLACEME> # database name inside the host
+db_user <REPLACEME> # database user
+db_pass <REPLACEME> # database password
+
+# Where the generated json goes
+json_dir json
+
+# Where the generated html goes
+html_dir html
+
+# Template directory
+tmpl_dir tmpl

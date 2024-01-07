@@ -1,0 +1,29 @@
+[% META
+   title   = 'The Massassi Temple Forums: Archive'
+%]
+
+<div id=forum_list>
+[% FOREACH category IN categories %]
+    <div class="category_row">
+        <div>[% category.title %]</div>
+        <div class="stats_header">Threads / Posts</div>
+        <div></div>
+    </div>
+
+    [% FOREACH forum IN forums %]
+        [% IF forum.parentid == category.forumid %]
+            <div class="forum_row">
+                <div>
+                    <a class="forum_title" href="">[% forum.title %]</a><br>
+                    <span class="forum_description">[% forum.description %]</span>
+                </div>
+                <div class="forum_stats">
+                    Threads: [% forum.threadcount.chunk(-3).join(',') %]<br>
+                    Posts: [% forum.replycount.chunk(-3).join(',') %]
+                </div>
+                <div></div>
+            </div>
+        [% END %]
+    [% END %]
+[%  END %]
+</div>

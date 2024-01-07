@@ -1,0 +1,3 @@
+#!/bin/bash
+
+export PERL5LIB=/home/brian/sites/forums.massassi.net/src/lib

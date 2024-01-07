@@ -1,0 +1,123 @@
+body {
+    background-color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: medium;
+    max-width: 120ch;
+    margin: auto auto;
+}
+
+body img {
+}
+
+#forum_list {
+}
+
+/* Link Styles */
+a {
+    color: #a4bb6a;
+}
+
+a:hover {
+    color: #cbcc57;
+    text-decoration: underline;
+}
+
+/* Archive Note Styles */
+.archive_note {
+    color: silver;
+    border-radius: 5px;
+    width: 70%;
+    border: 1px solid #333333;
+    margin: 1em;
+    margin-top: 0em;
+    padding: 1em;
+}
+
+.category_row {
+    display: grid;
+    grid-gap: 2px;
+    grid-template-columns: 50% 25% auto;
+    font-weight: bold;
+    color: white;
+    padding: 10px;
+    background-image: linear-gradient(rgb(43, 43, 43), black);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    margin-top: 25px;
+    padding-left: 10px;
+}
+
+.category_row div {
+    font-size: medium;
+}
+
+.forum_row {
+    display: grid;
+    grid-template-columns: 50% 25% auto;
+    margin-bottom: 1px;
+}
+
+.forum_row div {
+    background-color: #3f4829;
+    color: white;
+    padding: 10px;
+    padding-left: 20px;
+}
+
+.forum_title {
+    font-size: large;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.forum_description {
+    font-size: medium;
+}
+
+.stats_header {
+    text-align: right;
+}
+
+.forum_stats {
+    font-size: medium;
+    text-align: right;
+}
+
+/**
+ * search form styles
+ */
+form {
+    margin: 1em;
+}
+
+input[type=text] {
+    background-color:rgb(43, 43, 43);
+    color: silver;
+    border: 1px solid silver;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+input[type=submit] {
+    border-radius: 5px;
+    background-color: #5a6248;
+    color: white;
+    padding: 5px;
+    font-weight: bold;
+    border: 1px solid silver;
+}
+
+input[type=submit]:hover {
+    background-image: linear-gradient(rgb(43, 43, 43), black);
+}
+
+/*
+ * Footer styles
+ */
+#footer {
+    margin: 10px;
+    padding: 10px;
+    padding-left: 0px;
+    color: white;
+    font-size: medium;
+}
