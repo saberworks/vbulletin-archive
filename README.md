@@ -115,20 +115,6 @@ because as with everything vBulletin, it's nonsenical.  Example forum urls:
 
 I mean... come on.
 
+# LICENSE
 
-
-# various crap I don't think is useful anymore
-
-decode the contenttype "class" field (w t f?)
-
-select contenttypeid, class, convert(class, char) as class_label, packageid from contenttype order by contenttypeid;
-
-code regarding importing attachments:
-https://github.com/discourse/discourse/blob/main/script/import_scripts/vbulletin.rb#L608-L627
-
-    attachments = mysql_query(<<-SQL)
-      SELECT a.attachmentid, a.contentid as postid, p.threadid
-        FROM #{TABLE_PREFIX}attachment a, #{TABLE_PREFIX}post p
-       WHERE a.contentid = p.postid
-       AND contenttypeid = 1 AND state = 'visible'
-    SQL
+TODO
