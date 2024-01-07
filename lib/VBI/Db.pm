@@ -18,6 +18,7 @@ sub get {
     my %attr = (
         PrintError => 0,
         RaiseError => 1,
+        mysql_ssl_optional => 1,
     );
 
     my $dbh = DBI->connect($dsn, $conf->{'db_user'}, $conf->{'db_pass'}, \%attr);

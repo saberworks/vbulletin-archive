@@ -4,6 +4,7 @@ body {
     font-size: medium;
     max-width: 120ch;
     margin: auto auto;
+    color: white;
 }
 
 body img {
@@ -15,6 +16,7 @@ body img {
 /* Link Styles */
 a {
     color: #a4bb6a;
+    text-decoration: none;
 }
 
 a:hover {
@@ -33,6 +35,18 @@ a:hover {
     padding: 1em;
 }
 
+/* Crumbs styles */
+.crumbs {
+    font-weight: bold;
+    margin-left: 1em;
+}
+
+.crumbs .forum_description {
+    font-weight: normal;
+    font-size: small;
+}
+
+/* Forum list styles */
 .category_row {
     display: grid;
     grid-gap: 2px;
@@ -67,7 +81,7 @@ a:hover {
 .forum_title {
     font-size: large;
     font-weight: bold;
-    text-decoration: none;
+    /* text-decoration: none; */
 }
 
 .forum_description {
@@ -81,6 +95,54 @@ a:hover {
 .forum_stats {
     font-size: medium;
     text-align: right;
+}
+
+/* forum page / thread list styles */
+.thread_row_header {
+    display: grid;
+    grid-template-columns: 50% 25% auto;
+    font-weight: bold;
+    color: white;
+    padding: 10px;
+    background-image: linear-gradient(rgb(43, 43, 43), black);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    margin-top: 25px;
+}
+
+.thread_row_header div {
+    font-size: medium;
+    padding-right: 20px;
+    padding-left: 20px;
+}
+
+.thread_row {
+    display: grid;
+    grid-template-columns: 50% 25% auto;
+    border-bottom: 1px solid black;
+}
+
+.thread_row div {
+    background-color: #3f4829;
+    color: white;
+    padding: 10px;
+    padding-left: 20px;
+    border-left: 1px solid black;
+}
+
+.thread_row div.thread_stats {
+    font-size: small;
+    text-align: right;
+    /* background-color: #1f2314; */
+    padding-right: 20px;
+}
+
+.last_post {
+    font-size: small;
+}
+
+.post_info {
+    font-size: small;
 }
 
 /**

@@ -52,22 +52,23 @@ sub get_threads {
 }
 
 sub get_posts {
-    my $thread_id = shift;
+    my ($thread_id, $style_id) = @_;
 
+    # TODO: remove LIMIT 10 once verification is done
     my $q = q{
         SELECT p.postid, p.threadid, p.username, p.userid, p.title, p.dateline,
                p.pagetext, pp.pagetext_html,
                p.allowsmilie, p.showsignature, p.iconid, p.visible, p.parentid,
-               p.htmlstate
+               p.htmlstate, pp.hasimages, pp.dateline as parsed_dateline
           FROM post p
-          JOIN postparsed pp ON p.postid = pp.postid
+          LEFT JOIN postparsed pp ON (p.postid = pp.postid AND pp.styleid = ?)
          WHERE threadid = ?
            AND visible = 1
       ORDER BY dateline ASC
-         LIMIT 999999999
+         LIMIT 10
     };
 
-    return $dbh->selectall_arrayref($q, { Slice => {} }, $thread_id);
+    return $dbh->selectall_arrayref($q, { Slice => {} }, $style_id, $thread_id);
 }
 
 sub get_attachments {

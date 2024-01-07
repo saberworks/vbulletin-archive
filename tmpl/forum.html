@@ -1,0 +1,37 @@
+[% title = "${forum.title}" %]
+[% css_relative = "../../../" %]
+
+[% USE date %]
+
+<div class="crumbs">
+    &#9750; <a href="../../index.html">Forums</a> &rarr; [% forum.title %]<br>
+    <span class="forum_description">[% forum.description %]</span>
+</div>
+
+<div id="thread_list">
+    <div class="thread_row_header">
+        <div>Title / Thread Starter</div>
+        <div class="stats_header">Replies</div>
+        <div>Last Post By</div>
+    </div>
+
+    [% FOREACH thread IN threads %]
+        <div class="thread_row">
+            <div>
+                <a class="thread_title" href="[% thread.threadid %].html">[% thread.title %]</a><br>
+                <span class="post_info">
+                    [% thread.postusername %],
+                    [% date.format(thread.dateline, '%Y-%m-%d, %-I:%M %p') %]
+                </span>
+            </div>
+            <div class="thread_stats">
+                Replies: [% thread.replycount.chunk(-3).join(',') %]<br>
+                Views: [% thread.views.chunk(-3).join(',') %]
+            </div>
+            <div class="last_post">
+                [% thread.lastposter %]<br>
+                [% date.format(thread.lastpost, '%Y-%m-%d, %-I:%M %p') %]
+            </div>
+        </div>
+    [% END %]
+</div>

@@ -1,6 +1,4 @@
-[% META
-   title   = 'The Massassi Temple Forums: Archive'
-%]
+[% css_relative = "../" %]
 
 <div id=forum_list>
 [% FOREACH category IN categories %]
@@ -14,7 +12,7 @@
         [% IF forum.parentid == category.forumid %]
             <div class="forum_row">
                 <div>
-                    <a class="forum_title" href="">[% forum.title %]</a><br>
+                    <a class="forum_title" href="[% category.slug %]/[% forum.slug %]/index.html">[% forum.title %]</a><br>
                     <span class="forum_description">[% forum.description %]</span>
                 </div>
                 <div class="forum_stats">
