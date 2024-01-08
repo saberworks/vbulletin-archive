@@ -189,6 +189,7 @@ a:hover {
     font-weight: bold;
     font-size: medium;
     margin-bottom: 5px;
+    color: #a4bb6a;
 }
 
 .post_user_title {
@@ -209,10 +210,26 @@ a:hover {
     padding: 10px;
 }
 
+.post_attachment {
+    margin-left: 20px;
+    border: 1px solid silver;
+    border-radius: 5px;
+    background-color: black;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
 .post_signature {
     padding: 10px;
     margin-top: 20px;
     border-top: 1px solid black;
+}
+
+.post_text img {
+    display: block;
+    max-width: 95%;
+    border: 1px solid silver;
+    border-radius: 5px;
 }
 
 /* BB CODE styles */

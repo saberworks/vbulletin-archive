@@ -18,12 +18,15 @@ my $conf = VBI::Conf::get();
 
 my $style_id = $conf->{'style_id'};
 my $json_dir = $conf->{'json_dir'};
+my $html_dir = $conf->{'html_dir'};
 
 if(!directory_is_valid($json_dir)) {
     die "Please create the json_dir as specified in config.conf: $json_dir";
 }
 
-my @wanted_threads = @ARGV;
+if(!directory_is_valid($html_dir)) {
+    die "Please create the html_dir as specified in config.conf: $html_dir";
+}
 
 my $parents = VBI::Forum::get_parents();
 my $forums = VBI::Forum::get_forums();
@@ -35,7 +38,7 @@ add_slug($forums, 'title');
 VBI::JsonDump::dump_json($json_dir, "forum_categories.json", $parents);
 VBI::JsonDump::dump_json($json_dir, "forums.json", $forums);
 
-my $attachments_dir = create_dir($json_dir, "attachments");
+my $attachments_dir = create_dir($html_dir, "attachments");
 
 foreach my $parent (@$parents) {
     say $parent->{'title'};
@@ -67,20 +70,8 @@ foreach my $parent (@$parents) {
 
             my $posts = VBI::Forum::get_posts($thread_id, $style_id);
 
-            if(@wanted_threads) {
-                if(grep( /^$thread_id$/, @wanted_threads ) ) {
-                    warn "found it";
-                    warn Dumper $thread;
-                    warn Dumper $posts;
-                }
-                else {
-                    next;
-                }
-            }
-
             my $posts_file = sprintf($posts_file_fmt, $forum_id, $thread_id);
 
-            VBI::JsonDump::dump_json($forum_dir, $posts_file, $posts);
 
             foreach my $post (@$posts) {
                 my $post_id = $post->{'postid'};
@@ -94,20 +85,18 @@ foreach my $parent (@$parents) {
                     my $filedata = delete $attachment->{'filedata'};
                     my $thumbnail = delete $attachment->{'thumbnail'};
 
-                    my $filename = sprintf(
-                        '%d.%s',
-                        $attachment->{'attachmentid'},
-                        $attachment->{'extension'}
+                    my $filepath = join(
+                        '/', $attachments_dir, $attachment->{'filename'}
                     );
-
-                    my $filepath = "$attachments_dir/$filename";
 
                     open my $fh, '>', $filepath or die "Couldn't open $filepath for writing: $!";
                     print $fh $filedata;
                     close $fh;
-
-                    # warn "wrote $filepath\n";
                 }
+
+                $post->{'attachments'} = $attachments;
+
+                VBI::JsonDump::dump_json($forum_dir, $posts_file, $posts);
             }
         }
     }

@@ -10,8 +10,9 @@ use local::lib;
 use Data::Dumper;
 use File::Slurp qw/read_file/;
 use JSON;
-use Template;
+use List::Util qw(first);
 use Parse::BBCode;
+use Template;
 
 use VBI::Conf;
 use VBI::Util qw/create_dir/;
@@ -64,8 +65,6 @@ foreach my $cat (sort by_displayorder @$categories) {
 
             my $thread_json_file = sprintf("forum_%d_thread_%d.json", $forum_id, $thread_id);
             my $posts = parse_json($forum_json_dir, $thread_json_file);
-
-            warn Dumper($posts);
 
             generate_thread($cat, $forum, $thread, $posts, $forum_html_dir);
         }
@@ -132,7 +131,6 @@ sub generate_forum_index {
     return $forum_index_file;
 }
 
-# TODO
 sub generate_thread {
     my ($cat, $forum, $thread, $posts, $forum_html_dir) = @_;
 
@@ -161,19 +159,19 @@ sub generate_thread {
 }
 
 sub parse_bbcode {
-    my ($ref, $source_key, $output_key) = @_;
+    my ($posts, $source_key, $output_key) = @_;
 
-    foreach my $item (@$ref) {
-        if(!$item->{$source_key}) {
-            die "Unable to find $source_key in $ref, so unable to parse bb code";
+    foreach my $post (@$posts) {
+        if(!$post->{$source_key}) {
+            die "Unable to find $source_key in $post, so unable to parse bb code";
         }
 
-        $item->{$output_key} = _parse_bbcode($item->{$source_key});
+        $post->{$output_key} = _parse_bbcode($post->{$source_key}, $posts);
     }
 }
 
 sub _parse_bbcode {
-    my $code = shift;
+    my ($code, $posts) = @_;
 
     my $p = Parse::BBCode->new({
         tags => {
@@ -197,10 +195,82 @@ sub _parse_bbcode {
                 parse => 1,
                 class => 'block',
             },
+            'attach' => {
+                code => sub {
+                    # example: [ATTACH=CONFIG]29010[/ATTACH]
+                    # TODO: Probably have to examine attachment->extension and
+                    # render things like zips differently :( argh
+                    my ($parser, $attr, $content) = @_;
+                    if ($attr) {
+                        # is it always "CONFIG"???
+                    }
+                    my $a = find_attachment($posts, $$content);
+                    # Todo put the image dimensions in the html, and maybe do thumbnail?
+                    my ($filename, $width, $height, $thumbnail_width, $thumbnail_height) = $a->{'filename'};
+                    return qq{
+                        <div class="attached_image">
+                            <img src="../../attachments/$filename">
+                        </div>
+                    };
+                },
+                parse => 1,
+                class => 'block',
+            },
+            'flipthis' => {
+                code => sub {
+                    # example: [flipthis]<someurl>[/flipthis]
+                    my ($parser, $attr, $content) = @_;
+                    return qq{
+                        (╯°□°)╯︵<img src="$$content" style=" -moz-transform: rotate(180deg); -o-transform: rotate(180deg); -webkit-transform: rotate(180deg); transform: rotate(180deg); filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2); " />
+                    };
+                },
+                parse => 1,
+                class => 'block',
+            },
+            'youtube' => {
+                code => sub {
+                    # example: [youtube]q-wGMlSuX_c[/youtube]
+                    my ($parser, $attr, $content) = @_;
+                    return qq{
+                        <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/$$content?rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    };
+                },
+                parse => 1,
+                class => 'block',
+            },
+            'video' => {
+                code => sub {
+                    # example: [video=youtube;q-wGMlSuX_c]https://www.youtube.com/watch?v=OFsN97cxI-c[/youtube]
+                    my ($parser, $attr, $content) = @_;
+                    if($attr =~ /^youtube;/i) {
+                        $attr =~ s/^youtube;//;
+                    }
+                    else {
+                        return "Sorry, don't know how to play $attr videos :(";
+                    }
+                    return qq{
+                        <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/$attr?rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    };
+                },
+                parse => 1,
+                class => 'block',
+            },
         }
     });
 
     my $rendered = $p->render($code);
 
     return $rendered;
+}
+
+sub find_attachment {
+    my ($posts, $attachment_id) = @_;
+
+    foreach my $post (@$posts) {
+        my $attachments = $post->{'attachments'};
+
+        if(my ($matched) = grep { $_->{'attachmentid'} eq $attachment_id } @$attachments) {
+            return $matched;
+        }
+    }
 }

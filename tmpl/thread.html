@@ -26,6 +26,19 @@
             <div class="post_content">
                 <!-- <div class="post_text">[% post.pagetext %]</div> -->
                 <div class="post_text">[% post.post_html %]</div>
+                [% IF post.attachments %]
+                    [% FOREACH attachment IN post.attachments %]
+                        [% IF attachment.height==0 && attachment.width==0 %]
+                            <div class="post_attachment">
+                                Attachment:
+                                <a href="../../attachments/[% attachment.filename %]">
+                                    [% attachment.filename %]
+                                </a> ([% attachment.filesize.chunk(-3).join(',') %] bytes)
+                            </div>
+
+                        [% END %]
+                    [% END %]
+                [% END %]
                 [% IF post.signatureparsed %]
                     <div class="post_signature">[% post.signatureparsed %]</div>
                 [% END %]
