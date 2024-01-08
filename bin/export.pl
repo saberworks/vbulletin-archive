@@ -124,17 +124,3 @@ sub add_slug {
         $item->{'slug'} = slugify($item->{$key});
     }
 }
-
-# sub create_slug_dir {
-#     my ($parent_dir, $slug) = @_;
-
-#     my $dir = "$parent_dir/$slug";
-
-#     warn "CREATING DIR: $dir\n";
-
-#     if(!-d $dir) {
-#         mkdir $dir or die $!;
-#     }
-
-#     return $dir;
-# }

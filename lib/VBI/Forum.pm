@@ -39,13 +39,14 @@ sub get_parents {
 sub get_threads {
     my $forum_id = shift;
 
+    # TODO: remove LIMIT 10 once verification is done
     my $q = q{
         SELECT *
           FROM thread
          WHERE forumid = ?
            AND visible = 1
       ORDER BY lastpost DESC
-         LIMIT 999999999
+         LIMIT 10
     };
 
     return $dbh->selectall_arrayref($q, { Slice => {} }, $forum_id);
@@ -59,21 +60,27 @@ sub get_posts {
         SELECT p.postid, p.threadid, p.username, p.userid, p.title, p.dateline,
                p.pagetext, pp.pagetext_html,
                p.allowsmilie, p.showsignature, p.iconid, p.visible, p.parentid,
-               p.htmlstate, pp.hasimages, pp.dateline as parsed_dateline
+               p.htmlstate, pp.hasimages, pp.dateline as parsed_dateline,
+               u.usertitle, u.posts, sp.signatureparsed
           FROM post p
-          LEFT JOIN postparsed pp ON (p.postid = pp.postid AND pp.styleid = ?)
+          JOIN user u ON p.userid = u.userid
+     LEFT JOIN sigparsed sp ON (u.userid = sp.userid AND sp.styleid = ?)
+     LEFT JOIN postparsed pp ON (p.postid = pp.postid AND pp.styleid = ?)
          WHERE threadid = ?
            AND visible = 1
       ORDER BY dateline ASC
          LIMIT 10
     };
 
-    return $dbh->selectall_arrayref($q, { Slice => {} }, $style_id, $thread_id);
+    return $dbh->selectall_arrayref(
+        $q, { Slice => {} }, $style_id, $style_id, $thread_id
+    );
 }
 
 sub get_attachments {
     my $post_id = shift;
 
+    # TODO: remove LIMIT 10 once verification is done
     my $q = q{
       SELECT a.attachmentid, a.contentid as postid, a.filename,
              a.caption, a.displayorder, a.settings,
@@ -87,7 +94,7 @@ sub get_attachments {
          AND contenttypeid = 1
          AND state = 'visible'
     ORDER BY a.attachmentid
-       LIMIT 999999999
+       LIMIT 10
     };
 
     return $dbh->selectall_arrayref($q, { Slice => {} }, $post_id);

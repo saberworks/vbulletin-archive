@@ -9,8 +9,9 @@ use local::lib;
 
 use Data::Dumper;
 use File::Slurp qw/read_file/;
-use Template;
 use JSON;
+use Template;
+use Parse::BBCode;
 
 use VBI::Conf;
 use VBI::Util qw/create_dir/;
@@ -59,7 +60,14 @@ foreach my $cat (sort by_displayorder @$categories) {
         my $forum_index_file = generate_forum_index($cat, $forum, $threads, $forum_html_dir);
 
         foreach my $thread (@$threads) {
-            generate_thread($cat, $forum, $thread, $forum_html_dir);
+            my $thread_id = $thread->{'threadid'};
+
+            my $thread_json_file = sprintf("forum_%d_thread_%d.json", $forum_id, $thread_id);
+            my $posts = parse_json($forum_json_dir, $thread_json_file);
+
+            warn Dumper($posts);
+
+            generate_thread($cat, $forum, $thread, $posts, $forum_html_dir);
         }
 
         # TODO
@@ -84,7 +92,6 @@ sub by_displayorder {
 sub generate_index_file {
     my ($tmpl_dir, $categories, $forums, $html_dir) = @_;
 
-    # my $index_tmpl = $tmpl_dir . "/index.html";
     my $index_file = $html_dir . "/index.html";
 
     my $template = Template->new(
@@ -106,7 +113,6 @@ sub generate_index_file {
 sub generate_forum_index {
     my ($cat, $forum, $threads, $forum_html_dir) = @_;
 
-    # my $forum_index_tmpl = $tmpl_dir . "/forum.html";
     my $forum_index_file = $forum_html_dir . "/index.html";
 
     my $template = Template->new(
@@ -124,25 +130,77 @@ sub generate_forum_index {
         or die "Template processing failed for 'forum.html': " . $template->error();
 
     return $forum_index_file;
-    # return $index_file;
-
-    # open my $fh, '>', $forum_index_file
-    #     or die "Unable to open $forum_index_file: $!";
-
-    # foreach my $thread (@$threads) {
-    #     my $title = $thread->{'title'};
-    #     my $replies = $thread->{'replycount'};
-    #     say $fh "<p>$title ($replies replies)</p>";
-    #     generate_thread($cat, $forum, $thread, $forum_html_dir);
-    # }
-
-    # close $fh;
-
-    # return $forum_index_file;
 }
 
 # TODO
 sub generate_thread {
-    my ($cat, $forum, $thread, $forum_html_dir) = @_;
-    return;
+    my ($cat, $forum, $thread, $posts, $forum_html_dir) = @_;
+
+    parse_bbcode($posts, 'pagetext', 'post_html');
+
+    my $thread_id = $thread->{'threadid'};
+
+    my $thread_file = $forum_html_dir . '/' . $thread_id . '.html';
+
+    my $template = Template->new(
+        INCLUDE_PATH => $tmpl_dir,
+        WRAPPER => 'outer.html',
+    );
+
+    my $params = {
+        category => $cat,
+        forum => $forum,
+        thread => $thread,
+        posts => $posts,
+    };
+
+    $template->process("thread.html", $params, $thread_file)
+        or die "Template processing failed for 'thread.html': " . $template->error();
+
+    return $thread_file;
+}
+
+sub parse_bbcode {
+    my ($ref, $source_key, $output_key) = @_;
+
+    foreach my $item (@$ref) {
+        if(!$item->{$source_key}) {
+            die "Unable to find $source_key in $ref, so unable to parse bb code";
+        }
+
+        $item->{$output_key} = _parse_bbcode($item->{$source_key});
+    }
+}
+
+sub _parse_bbcode {
+    my $code = shift;
+
+    my $p = Parse::BBCode->new({
+        tags => {
+            # load the default tags
+            Parse::BBCode::HTML->defaults,
+
+            # add/override tags
+            'quote' => {
+                code => sub {
+                    my ($parser, $attr, $content) = @_;
+                    my $title = 'Quote';
+                    if ($attr) {
+                        $attr =~ s/;\d+$//; # remove user id from end of attr
+                        $title = "Originally posted by <strong>" . Parse::BBCode::escape_html($attr) . "</strong>";
+                    }
+                    return qq{
+                        <div class="bbcode_quote_header">$title:
+                        <div class="bbcode_quote_body">$$content</div></div>
+                    };
+                },
+                parse => 1,
+                class => 'block',
+            },
+        }
+    });
+
+    my $rendered = $p->render($code);
+
+    return $rendered;
 }

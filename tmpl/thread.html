@@ -1,0 +1,35 @@
+[% title = "${thread.title} - ${forum.title}" %]
+[% css_relative = "../../.." %]
+[% home_relative = "../.." %]
+
+[% USE date %]
+
+<div class="crumbs">
+    &#9750; <a href="../../index.html">Forums</a>
+    &rarr; <a href="index.html">[% forum.title %]</a>
+    &rarr; [% thread.title %]
+</div>
+
+<div id="post_list">
+    <div class="post_row_header">
+        <div>[% thread.title %]</div>
+    </div>
+
+    [% FOREACH post IN posts %]
+        <div class="post_date_row">[% date.format(post.dateline, '%Y-%m-%d, %-I:%M %p') %]</div>
+        <div class="post_row">
+            <div class="post_user_info">
+                <div class="post_user">[% post.username %]</div>
+                <div class="post_user_title">[% post.usertitle %]</div>
+                <div class="post_user_num_posts">Posts: [% post.posts.chunk(-3).join(',') %]</div>
+            </div>
+            <div class="post_content">
+                <!-- <div class="post_text">[% post.pagetext %]</div> -->
+                <div class="post_text">[% post.post_html %]</div>
+                [% IF post.signatureparsed %]
+                    <div class="post_signature">[% post.signatureparsed %]</div>
+                [% END %]
+            </div>
+        </div>
+    [% END %]
+</div>

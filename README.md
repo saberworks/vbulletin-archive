@@ -49,6 +49,7 @@ perl -MCPAN -Mlocal::lib -e 'CPAN::install(JSON)'
 perl -MCPAN -Mlocal::lib -e 'CPAN::install(DBD::mysql)'
 perl -MCPAN -Mlocal::lib -e 'CPAN::install(File::Slurp)'
 perl -MCPAN -Mlocal::lib -e 'CPAN::install(Template::Toolkit)'
+perl -MCPAN -Mlocal::lib -e 'CPAN::install(Parse::BBCode)'
 ```
 
 For any perl command to work you need to tell it where to find the modules
@@ -114,6 +115,14 @@ because as with everything vBulletin, it's nonsenical.  Example forum urls:
 * https://forums.massassi.net/vb3/showthread.php?68318-Happy-New-Years!!
 
 I mean... come on.
+
+# STUPID ANNOYING NOTES
+
+I couldn't figure out how to make Parse::BBCode stop escaping `&amp;`
+ampersands.  Vbulletin stores entities like `&#64;` inside their tables.  The
+Parse::BBCode module translates it into `&amp;#64;` which is nonsensical and
+doesn't render.  So I went into their code and commented out the section that
+does that.  Must research further, there has to be a better way.
 
 # LICENSE
 
