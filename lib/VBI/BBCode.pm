@@ -21,6 +21,8 @@ sub new {
         '-'        => { code => \&do_strike,   parse => 1, class => 'block', },
     );
 
+    my $smilies = $class->get_smilies();
+
     my $self = $class->SUPER::new({
         tags => {
             # load the default tags
@@ -28,7 +30,12 @@ sub new {
 
             # add/override tags
             %tags
-        }
+        },
+        smileys => {
+            base_url => '../../smileys/',
+            icons => $smilies,
+            format => '<img src="%s" alt="%s">',
+        },
     });
 
     $self->{'posts'} = $posts;
@@ -125,6 +132,7 @@ sub do_video {
     }
     return qq{
         <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/$attr?rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <iframe class="ytplayer" type="text/html" width="560" height="315" src="https://www.youtube.com/embed/$attr?autoplay=0" frameborder="0" allowfullscreen></iframe>
     };
 }
 
@@ -133,6 +141,51 @@ sub do_strike {
     my ($parser, $attr, $content) = @_;
     return qq{
         <s>$$content</s>
+    };
+}
+
+sub get_smilies {
+    my $class = shift;
+
+    return {
+        '.('           => '1i_frown.gif',
+        ':tinfoil:'    => 'emot-tinfoil.gif',
+        ':suicide:'    => 'emot-suicide.gif',
+        ':awesome:'    => 'emot-awesom.gif',
+        ':neckbeard:'  => 'emot-neckbeard.gif',
+        ':colbert:'    => 'emot-colbert.gif',
+        ':hist101:'    => 'emot-hist101.gif',
+        ':eng101:'     => 'emot-eng101-good.gif',
+        ':rant:'       => 'emot-rant-massassi.gif',
+        ':tfti:'       => 'tfti.png',
+        ':master:'     => 'emot-master.gif',
+        ':nonono:'     => 'nonono2.gif',
+        ':huh:'        => 'awesome-huh.png',
+        ':XD:'         => 'awesome-xd.png',
+        ':carl:'       => 'carl.png',
+        ':awesomelon:' => 'emot-awesomelon.gif',
+        ':psylon:'     => 'emot-psylon.gif',
+        ':smith:'      => 'emot-smith.gif',
+        ':omg:'        => 'awesome-shock.png',
+        ':downswords:' => 'emot-downswords.gif',
+        ':argh:'       => 'emot-argh.gif',
+        ':)'           => 'smile_new.gif',
+        ':rolleyes:'   => 'rolleyes.gif',
+        ':cool:'       => 'cool.gif',
+        ':P'           => 'tongue.gif',
+        ';)'           => 'wink.gif',
+        ':D'           => 'biggrin.gif',
+        ':o'           => 'emot-eek.gif',
+        ':('           => 'frown.gif',
+        ':eek:'        => 'eek.gif',
+        ':confused:'   => 'confused_new.gif',
+        ':mad:'        => 'mad_new.gif',
+        ':gonk:'       => 'emot-gonk.gif',
+        ':psyduck:'    => 'emot-psyduck.gif',
+        ':v:'          => 'emot-v.gif',
+        ':gbk:'        => '3.gif',
+        ':ninja:'      => 'emot-ninja.gif',
+        ':farnsworth:' => 'goodnews.gif',
     };
 }
 

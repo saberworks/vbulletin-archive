@@ -26,6 +26,8 @@ my $tmpl_dir = $conf->{'tmpl_dir'};
 warn Dumper($conf);
 warn "TMPL DIR: $tmpl_dir";
 
+copy_smileys($conf->{'smileys_dir'}, $html_dir, '/smileys');
+
 my $unsorted_categories = parse_json($json_dir, "forum_categories.json");
 my $unsorted_forums = parse_json($json_dir, "forums.json");
 
@@ -178,4 +180,13 @@ sub _parse_bbcode {
     my $rendered = $parser->render($code);
 
     return $rendered;
+}
+
+sub copy_smileys {
+    my ($source_dir, $html_dir, $smilies_dir) = @_;
+
+    my $destination_dir = create_dir($html_dir, $smilies_dir);
+
+    system("cp $source_dir/* $destination_dir/") == 0
+        or die "copying smileys failed: $?";
 }
