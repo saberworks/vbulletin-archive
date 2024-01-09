@@ -68,10 +68,12 @@ foreach my $parent (@$parents) {
         foreach my $thread (@$threads) {
             my $thread_id = $thread->{'threadid'};
 
+            say "\tprocessing thread $thread_id";
+            say "\t" . $thread->{'title'};
+
             my $posts = VBI::Forum::get_posts($thread_id, $style_id);
 
             my $posts_file = sprintf($posts_file_fmt, $forum_id, $thread_id);
-
 
             foreach my $post (@$posts) {
                 my $post_id = $post->{'postid'};

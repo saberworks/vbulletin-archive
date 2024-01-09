@@ -66,6 +66,11 @@ foreach my $cat (sort by_displayorder @$categories) {
             my $thread_id = $thread->{'threadid'};
 
             my $thread_json_file = sprintf("forum_%d_thread_%d.json", $forum_id, $thread_id);
+
+            # Apparently we have some threads in the index that don't have any
+            # posts?  wth?
+            next unless -f "$forum_json_dir/$thread_json_file";
+
             my $posts = parse_json($forum_json_dir, $thread_json_file);
 
             generate_thread($cat, $forum, $thread, $posts, $forum_html_dir);
@@ -81,7 +86,16 @@ foreach my $cat (sort by_displayorder @$categories) {
 sub parse_json {
     my ($dir, $file) = @_;
 
-    my $json = read_file($dir . "/" . $file);
+    my $json;
+
+    eval {
+        $json = read_file($dir . "/" . $file);
+    };
+
+    if(my $error = $@) {
+        warn "Unable to read $dir/$file, SKIPPING.  $error";
+        return;
+    }
 
     return decode_json($json);
 }

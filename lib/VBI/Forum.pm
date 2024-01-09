@@ -11,12 +11,14 @@ use VBI::Db;
 
 my $dbh = VBI::Db::get();
 
+my $HARD_LIMIT = 1000;
+
 sub get_forums {
     my $q = q{
         SELECT forumid, title, description, parentid, displayorder,
                replycount, threadcount
           FROM forum
-         WHERE forumid IN( 8, 14, 29, 9, 12, 11, 24)
+         WHERE forumid IN(8, 14, 29, 9, 12, 11, 24)
            AND displayorder != 0
          ORDER BY parentid, displayorder, title, description
     };
@@ -39,14 +41,13 @@ sub get_parents {
 sub get_threads {
     my $forum_id = shift;
 
-    # TODO: remove LIMIT 10 once verification is done
-    my $q = q{
+    my $q = qq{
         SELECT *
           FROM thread
          WHERE forumid = ?
            AND visible = 1
       ORDER BY lastpost DESC
-         LIMIT 10
+         LIMIT $HARD_LIMIT
     };
 
     return $dbh->selectall_arrayref($q, { Slice => {} }, $forum_id);
@@ -55,8 +56,7 @@ sub get_threads {
 sub get_posts {
     my ($thread_id, $style_id) = @_;
 
-    # TODO: remove LIMIT 10 once verification is done
-    my $q = q{
+    my $q = qq{
         SELECT p.postid, p.threadid, p.username, p.userid, p.title, p.dateline,
                p.pagetext, pp.pagetext_html,
                p.allowsmilie, p.showsignature, p.iconid, p.visible, p.parentid,
@@ -69,7 +69,7 @@ sub get_posts {
          WHERE threadid = ?
            AND visible = 1
       ORDER BY dateline ASC
-         LIMIT 10
+         LIMIT $HARD_LIMIT
     };
 
     return $dbh->selectall_arrayref(
@@ -80,8 +80,7 @@ sub get_posts {
 sub get_attachments {
     my $post_id = shift;
 
-    # TODO: remove LIMIT 10 once verification is done
-    my $q = q{
+    my $q = qq{
       SELECT a.attachmentid, a.contentid as postid, a.filename,
              a.caption, a.displayorder, a.settings,
              p.threadid,
@@ -94,7 +93,7 @@ sub get_attachments {
          AND contenttypeid = 1
          AND state = 'visible'
     ORDER BY a.attachmentid
-       LIMIT 10
+       LIMIT $HARD_LIMIT
     };
 
     return $dbh->selectall_arrayref($q, { Slice => {} }, $post_id);

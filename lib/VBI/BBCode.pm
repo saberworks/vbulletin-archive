@@ -3,7 +3,7 @@ package VBI::BBCode;
 use warnings;
 use strict;
 
-# use Parse::BBCode;
+use Data::Dumper;
 
 use parent 'Parse::BBCode';
 
@@ -18,12 +18,15 @@ sub new {
         'fliptext' => { code => \&do_fliptext, parse => 1, class => 'block', },
         'youtube'  => { code => \&do_youtube,  parse => 1, class => 'block', },
         'video'    => { code => \&do_video,    parse => 1, class => 'block', },
-        '-'        => { code => \&do_strike,   parse => 1, class => 'block', },
+        '-'        => { code => \&do_strike,   parse => 1, class => 'inline', },
+        'font'     => { code => \&do_font,     parse => 1, class => 'inline', },
+        'color'    => { code => \&do_color,    parse => 1, class => 'inline', },
     );
 
     my $smilies = $class->get_smilies();
 
     my $self = $class->SUPER::new({
+        close_open_tags => 1,
         tags => {
             # load the default tags
             Parse::BBCode::HTML->defaults,
@@ -86,7 +89,8 @@ sub do_attach {
     my $posts = $parser->{'posts'};
     my $a = find_attachment($posts, $$content);
     # Todo put the image dimensions in the html, and maybe do thumbnail?
-    my ($filename, $width, $height, $thumbnail_width, $thumbnail_height) = $a->{'filename'};
+    return "[Unable to find specified attachment]" unless $a;
+    my $filename = $a->{'filename'};
     return qq{
         <div class="attached_image">
             <img src="../../attachments/$filename">
@@ -141,6 +145,22 @@ sub do_strike {
     my ($parser, $attr, $content) = @_;
     return qq{
         <s>$$content</s>
+    };
+}
+
+# Example: [FONT=verdana]text[/font]
+sub do_font {
+    my ($parser, $attr, $content) = @_;
+    return qq{
+        <span style="font-face: $attr;">$$content</span>
+    };
+}
+
+# Example: [COLOR=#FFFFFF]text[/color]
+sub do_color {
+    my ($parser, $attr, $content) = @_;
+    return qq{
+        <span style="color: $attr;">$$content</span>
     };
 }
 
