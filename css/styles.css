@@ -226,7 +226,7 @@ a:hover {
 }
 
 .post_text img {
-    display: block;
+    /* display: block; */
     max-width: 95%;
     border: 1px solid silver;
     border-radius: 5px;
