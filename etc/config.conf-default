@@ -3,6 +3,10 @@ db_name <REPLACEME> # database name inside the host
 db_user <REPLACEME> # database user
 db_pass <REPLACEME> # database password
 
+# A directory containing all the smileys
+# This will be copied into html/smileys directory
+smileys_dir smileys
+
 # Where the generated json goes
 json_dir json
 
@@ -11,3 +15,6 @@ html_dir html
 
 # Template directory
 tmpl_dir tmpl
+
+# Style ID to pull from posts cache
+style_id 33
