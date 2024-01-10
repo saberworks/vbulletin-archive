@@ -27,6 +27,7 @@ warn Dumper($conf);
 warn "TMPL DIR: $tmpl_dir";
 
 copy_smileys($conf->{'smileys_dir'}, $html_dir, '/smileys');
+copy_css('css', $html_dir);
 
 my $unsorted_categories = parse_json($json_dir, "forum_categories.json");
 my $unsorted_forums = parse_json($json_dir, "forums.json");
@@ -81,7 +82,6 @@ foreach my $cat (sort by_displayorder @$categories) {
         # urls
     }
 }
-
 
 sub parse_json {
     my ($dir, $file) = @_;
@@ -174,12 +174,20 @@ sub generate_thread {
     return $thread_file;
 }
 
+#
+# $source_key is the key in the $post that contains the user's unparsed input
+#
+# $output_key is the key in the $post which will contain the _parsed_ input
+#             after this function has run
 sub parse_bbcode {
     my ($posts, $source_key, $output_key) = @_;
 
     foreach my $post (@$posts) {
         if(!$post->{$source_key}) {
-            die "Unable to find $source_key in $post, so unable to parse bb code";
+            my $post_id = $post->{'postid'};
+            warn "Unable to find $source_key in $post_id, so unable to parse bb code, SKIPPING";
+            $post->{$output_key} = $post->{$source_key};
+            next;
         }
 
         $post->{$output_key} = _parse_bbcode($post->{$source_key}, $posts);
@@ -203,4 +211,13 @@ sub copy_smileys {
 
     system("cp $source_dir/* $destination_dir/") == 0
         or die "copying smileys failed: $?";
+}
+
+sub copy_css {
+    my ($source_dir, $html_dir) = @_;
+
+    my $destination_dir = create_dir($html_dir, 'css');
+
+    system("cp $source_dir/* $destination_dir") == 0
+        or die "copying css failed: $?";
 }

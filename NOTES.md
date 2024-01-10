@@ -1,4 +1,20 @@
+# TODO TODO TODO
+
+- some [code] tags not working right
+- [spoiler] tags not working at all
+- images in custom user titles are broken
+- add "go to top" link to bottom of every page
+
+# FIXED
+
+- [quote] with space in name like [quote=Foo Bar:12345] (breaks Parse::BBCode)
+- fix slow export
+
+
 # post cache
+
+Note: ended up not using postparsed, just doing all the parsing myself, so all
+the stuff below doesn't matter.
 
 Problem: text in the `post` table has raw bb code.  It would be nice to get
 vbulletin to parse/interpolate the bb code into real HTML before export.

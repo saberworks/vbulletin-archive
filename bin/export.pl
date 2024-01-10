@@ -8,6 +8,7 @@ use feature qw/say/;
 use local::lib;
 
 use Data::Dumper;
+use Devel::Size qw(total_size);
 use JSON;
 
 use VBI::Forum;
@@ -40,6 +41,11 @@ VBI::JsonDump::dump_json($json_dir, "forums.json", $forums);
 
 my $attachments_dir = create_dir($html_dir, "attachments");
 
+my $attachments_by_post = dump_all_attachments($attachments_dir);
+
+warn "SIZE in memory of attachments list:";
+warn total_size($attachments_by_post);
+
 foreach my $parent (@$parents) {
     say $parent->{'title'};
 
@@ -68,8 +74,7 @@ foreach my $parent (@$parents) {
         foreach my $thread (@$threads) {
             my $thread_id = $thread->{'threadid'};
 
-            say "\tprocessing thread $thread_id";
-            say "\t" . $thread->{'title'};
+            say "\tprocessing thread $thread_id (" . $thread->{'title'} . ")";
 
             my $posts = VBI::Forum::get_posts($thread_id, $style_id);
 
@@ -78,28 +83,13 @@ foreach my $parent (@$parents) {
             foreach my $post (@$posts) {
                 my $post_id = $post->{'postid'};
 
-                my $attachments = VBI::Forum::get_attachments($post_id);
-
-                # TODO: figure out correct filenames to write attachments
-                # and thumbnail files (which are currently not being output
-                # at all!)
-                foreach my $attachment (@$attachments) {
-                    my $filedata = delete $attachment->{'filedata'};
-                    my $thumbnail = delete $attachment->{'thumbnail'};
-
-                    my $filepath = join(
-                        '/', $attachments_dir, $attachment->{'filename'}
-                    );
-
-                    open my $fh, '>', $filepath or die "Couldn't open $filepath for writing: $!";
-                    print $fh $filedata;
-                    close $fh;
-                }
+                my $attachments = $attachments_by_post->{$post_id};
 
                 $post->{'attachments'} = $attachments;
-
-                VBI::JsonDump::dump_json($forum_dir, $posts_file, $posts);
             }
+
+            VBI::JsonDump::dump_json($forum_dir, $posts_file, $posts);
+
         }
     }
 }
@@ -114,4 +104,42 @@ sub add_slug {
 
         $item->{'slug'} = slugify($item->{$key});
     }
+}
+
+sub dump_all_attachments {
+    my $attachments_dir = shift;
+
+    my $sth = VBI::Forum::get_all_attachments();
+
+    my $attachments_by_post = {};
+
+    while(my $row = $sth->fetchrow_hashref()) {
+        my $post_id = $row->{'postid'};
+        my $attachment_id = $row->{'attachmentid'};
+
+        # TODO: figure out correct filenames to write attachments
+        # and thumbnail files (which are currently not being output
+        # at all!)
+        my $filedata = delete $row->{'filedata'};
+        my $thumbnail = delete $row->{'thumbnail'};
+
+        # program will die if this create_dir fails
+        my $dir = create_dir($attachments_dir, $attachment_id);
+
+        my $relative_filename = sprintf('%d/%s', $attachment_id, $row->{'filename'});
+
+        my $filepath = join(
+            '/', $attachments_dir, $relative_filename
+        );
+
+        open my $fh, '>', $filepath or die "Couldn't open $filepath for writing: $!";
+        print $fh $filedata;
+        close $fh;
+
+        $row->{'filename'} = $relative_filename;
+
+        push @{$attachments_by_post->{$post_id}}, $row;
+    }
+
+    return $attachments_by_post;
 }

@@ -11,7 +11,7 @@ use VBI::Db;
 
 my $dbh = VBI::Db::get();
 
-my $HARD_LIMIT = 1000;
+my $HARD_LIMIT = 99999999;
 
 sub get_forums {
     my $q = q{
@@ -97,6 +97,37 @@ sub get_attachments {
     };
 
     return $dbh->selectall_arrayref($q, { Slice => {} }, $post_id);
+}
+
+# This returns a statement handle to get results rather than a list of results
+# (different than all the other functions in this package).
+#
+# Returns all valid/public/visible attachments.  Intention is for these to be
+# dumped to filesystem ahead of time and no more need to look up attachments
+# on a per-post basis (was taking too long).
+sub get_all_attachments {
+    my $q = qq{
+      SELECT a.attachmentid, a.contentid as postid, a.filename,
+             a.caption, a.displayorder, a.settings,
+             p.threadid,
+             fd.filedata,
+             fd.thumbnail,
+             fd.filesize, fd.extension,
+             fd.width, fd.height, fd.thumbnail_width, fd.thumbnail_height
+        FROM attachment a, post p, filedata fd
+       WHERE a.contentid = p.postid
+         AND a.filedataid = fd.filedataid
+         AND contenttypeid = 1
+         AND state = 'visible'
+    ORDER BY a.attachmentid
+       LIMIT 99999999999
+    };
+
+    my $sth = $dbh->prepare($q);
+
+    $sth->execute() or die "Unable to get_all_attachments()";
+
+    return $sth;
 }
 
 1;

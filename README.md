@@ -118,6 +118,9 @@ I mean... come on.
 
 # STUPID ANNOYING NOTES
 
+Note: the below is no longer the case, I was able to override in a child
+class, see VBI::BBCode.
+
 I couldn't figure out how to make Parse::BBCode stop escaping `&amp;`
 ampersands.  Vbulletin stores entities like `&#64;` inside their tables.  The
 Parse::BBCode module translates it into `&amp;#64;` which is nonsensical and

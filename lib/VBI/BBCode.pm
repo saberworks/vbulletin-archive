@@ -10,7 +10,21 @@ use parent 'Parse::BBCode';
 sub new {
     my ($class, $posts) = @_;
 
-    # These are the tags I'm overloading from Parse::BBCode
+    # Totally evil.  Parse::BBCode is written such that I can't just
+    # override escape_html function in my subclass, because it does this
+    # silly thing for some reason:
+    #
+    #     my $escape = \&Parse::BBCode::escape_html;
+    #
+    # So just reach into their symbol table and replace it with my less
+    # strict one.
+    {
+        no warnings 'redefine';
+
+        *Parse::BBCode::escape_html = \&escape_html_less_strict;
+    }
+
+    # These are the tags I'm overriding from Parse::BBCode or adding
     my %tags = (
         'quote'    => { code => \&do_quote,    parse => 1, class => 'block', },
         'attach'   => { code => \&do_attach,   parse => 1, class => 'block', },
@@ -39,6 +53,7 @@ sub new {
             icons => $smilies,
             format => '<img src="%s" alt="%s">',
         },
+        attribute_parser => \&parse_attributes,
     });
 
     $self->{'posts'} = $posts;
@@ -128,11 +143,15 @@ sub do_youtube {
 # only supports youtube.
 sub do_video {
     my ($parser, $attr, $content) = @_;
+    if(!$attr) {
+        return "Sorry, don't know how to play this video :(<br>$$content";
+    }
+
     if($attr =~ /^youtube;/i) {
         $attr =~ s/^youtube;//;
     }
     else {
-        return "Sorry, don't know how to play $attr videos :(";
+        return "Sorry, don't know how to play this video :(<br>$$content";
     }
     return qq{
         <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/$attr?rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
@@ -207,6 +226,89 @@ sub get_smilies {
         ':ninja:'      => 'emot-ninja.gif',
         ':farnsworth:' => 'goodnews.gif',
     };
+}
+
+# This is a copy of the "parse_attributes" method from the parent class,
+# but modified to allow spaces in attributes and to strip any `;1234`
+# semi-colon followed by a number that's added to an attribute (this was
+# used by vbulletin to link to the quoted-user's profile page).
+#
+# Example: [quote=Bob Barker;1234
+sub parse_attributes {
+    my ($self, %args) = @_;
+    my $text = $args{text};
+    my $tagname = $args{tag};
+    my $attribute_quote = $self->get_attribute_quote;
+    my $attr_string = '';
+    my $attributes = [];
+    if (
+        ($self->get_direct_attribute and $$text =~ s/^(=[^\]]*)?]//)
+            or
+        ($$text =~ s/^( [^\]]*)?\]//)
+    ) {
+        my $attr = $1;
+        my $end = ']';
+        $attr = '' unless defined $attr;
+        $attr_string = $attr;
+        unless (length $attr) {
+            return (1, [], $attr_string, $end);
+        }
+        if ($self->get_direct_attribute) {
+            $attr =~ s/^=//;
+        }
+        if ($self->get_strict_attributes and not length $attr) {
+            return (0, [], $attr_string, $end);
+        }
+        my @array;
+        if (length($attribute_quote) == 1) {
+            #if ($attr =~ s/^(?:$attribute_quote(.+?)$attribute_quote(?:\s+|$)|(.*?)(?:\s+|$))//) {
+            if ($attr =~ s/^(?:$attribute_quote(.+?)$attribute_quote(?:\s+|$)|(.*?)(?:\;.*$)|(.*?)(?:\s+|$))//) {
+                my $val;
+
+                foreach my $item ($1, $2, $3) {
+                    $val = $item if defined $item;
+                }
+                #my $val = defined $1 ? $1 : $2;
+                push @array, [$val];
+            }
+            while ($attr =~ s/^([a-zA-Z0-9_]+)=(?:$attribute_quote(.+?)$attribute_quote(?:\s+|$)|(.*?)(?:\s+|$))//) {
+                my $name = $1;
+                my $val = defined $2 ? $2 : $3;
+                push @array, [$name, $val];
+            }
+        }
+        else {
+            if ($attr =~ s/^(?:(["'])(.+?)\1|(.*?)(?:\s+|$))//) {
+                my $val = defined $2 ? $2 : $3;
+                push @array, [$val];
+            }
+            while ($attr =~ s/^([a-zA-Z0-9_]+)=(?:(["'])(.+?)\2|(.*?)(?:\s+|$))//) {
+                my $name = $1;
+                my $val = defined $3 ? $3 : $4;
+                push @array, [$name, $val];
+            }
+        }
+        if ($self->get_strict_attributes and length $attr and $attr =~ tr/ //c) {
+            return (0, [], $attr_string, $end);
+        }
+        $attributes = [@array];
+        return (1, $attributes, $attr_string, $end);
+    }
+    return (0, $attributes, $attr_string, '');
+}
+
+# Copied from parent, but don't escape &amp; because it breaks tons of things
+# like single quotes; hopefully vbulletin already verified the input was good
+# before they saved to db?
+sub escape_html_less_strict {
+    my ($str) = @_;
+    return '' unless defined $str;
+    #$str =~ s/&/&amp;/g;
+    $str =~ s/"/&quot;/g;
+    $str =~ s/'/&#39;/g;
+    $str =~ s/>/&gt;/g;
+    $str =~ s/</&lt;/g;
+    return $str;
 }
 
 1;

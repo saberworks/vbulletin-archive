@@ -1,5 +1,5 @@
 [% title = "${thread.title} - ${forum.title}" %]
-[% css_relative = "../../.." %]
+[% css_relative = "../.." %]
 [% home_relative = "../.." %]
 
 [% USE date %]
@@ -24,7 +24,6 @@
                 <div class="post_user_num_posts">Posts: [% post.posts.chunk(-3).join(',') %]</div>
             </div>
             <div class="post_content">
-                <!-- <div class="post_text">[% post.pagetext %]</div> -->
                 <div class="post_text">[% post.post_html %]</div>
                 [% IF post.attachments %]
                     [% FOREACH attachment IN post.attachments %]
