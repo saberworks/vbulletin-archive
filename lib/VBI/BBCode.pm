@@ -35,6 +35,8 @@ sub new {
         '-'        => { code => \&do_strike,   parse => 1, class => 'inline', },
         'font'     => { code => \&do_font,     parse => 1, class => 'inline', },
         'color'    => { code => \&do_color,    parse => 1, class => 'inline', },
+        'spoiler'  => { code => \&do_spoiler,  parse => 1, class => 'inline', },
+        'spoilerbox' => { code => \&do_spoilerbox, parse => 1, class => 'block', },
     );
 
     my $smilies = $class->get_smilies();
@@ -180,6 +182,20 @@ sub do_color {
     my ($parser, $attr, $content) = @_;
     return qq{
         <span style="color: $attr;">$$content</span>
+    };
+}
+
+sub do_spoiler {
+    my ($parser, $attr, $content) = @_;
+    return qq{
+        <span style="background-color: #000; color: #000;" onmouseover="this.style.color='#FFFFFF';" onmouseout="this.style.color='#000000'">$$content</span>
+    };
+}
+
+sub do_spoilerbox {
+    my ($parser, $attr, $content) = @_;
+    return qq{
+        <blockquote><small>spoiler:</small><div style="color: black; background-color: black;" onmouseover="this.style.color='white';" onmouseout="this.style.color='black'">$$content</div></blockquote>
     };
 }
 

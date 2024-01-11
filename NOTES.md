@@ -1,14 +1,17 @@
 # TODO TODO TODO
 
 - some [code] tags not working right
-- [spoiler] tags not working at all
-- images in custom user titles are broken
-- add "go to top" link to bottom of every page
+- output a set of redirect rules for apache or nginx so old URLs can be
+  redirected to the archive
 
 # FIXED
 
+- add "go to top" link to bottom of every page
+- [spoiler] tags not working at all
 - [quote] with space in name like [quote=Foo Bar:12345] (breaks Parse::BBCode)
 - fix slow export
+- images in custom user titles are broken
+
 
 
 # post cache

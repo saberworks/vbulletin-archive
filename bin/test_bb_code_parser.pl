@@ -22,6 +22,8 @@ my @tests = (
     "[quote=foo bar;1234]quoted text[/quote]",
     "[quote]quoted text[/quote]",
     '[quote=foo]quoted text[/quote]',
+    '[spoiler]foo[/spoiler]',
+    '[spoilerbox]foo[/spoilerbox]',
 );
 
 foreach my $test (@tests) {
