@@ -10,7 +10,8 @@ use local::lib;
 use Data::Dumper;
 use File::Slurp qw/read_file/;
 use JSON;
-use List::Util qw(first);
+use List::Util qw/first/;
+use Storable qw/dclone/;
 use Template;
 
 use VBI::BBCode;
@@ -18,6 +19,8 @@ use VBI::Conf;
 use VBI::Util qw/create_dir/;
 
 my $conf = VBI::Conf::get();
+
+my $global_page_size = $conf->{'global_page_size'};
 
 my $json_dir = $conf->{'json_dir'};
 my $html_dir = $conf->{'html_dir'};
@@ -61,7 +64,7 @@ foreach my $cat (sort by_displayorder @$categories) {
 
         my $threads = parse_json($forum_json_dir, sprintf("forum_%d_thread_list.json", $forum_id));
 
-        my $forum_index_file = generate_forum_index($cat, $forum, $threads, $forum_html_dir);
+        generate_forum_index($cat, $forum, $threads, $forum_html_dir);
 
         foreach my $thread (@$threads) {
             my $thread_id = $thread->{'threadid'};
@@ -128,23 +131,48 @@ sub generate_index_file {
 sub generate_forum_index {
     my ($cat, $forum, $threads, $forum_html_dir) = @_;
 
+    my $threads_copy = dclone($threads);
+
+    my $forum_id = $forum->{'forumid'};
+
     my $forum_index_file = $forum_html_dir . "/index.html";
+    my $paged_file_fmt = $forum_html_dir . "/forum_${forum_id}_page_%d.html";
 
-    my $template = Template->new(
-        INCLUDE_PATH => $tmpl_dir,
-        WRAPPER => 'outer.html',
-    );
+    my @paged_threads;
 
-    my $params = {
-        category => $cat,
-        forum => $forum,
-        threads => $threads,
-    };
+    # split thread list into chunks of $global_page_size for paging
+    while (my @next_100 = splice @$threads_copy, 0, $global_page_size) {
+        push @paged_threads, \@next_100;
+    }
 
-    $template->process("forum.html", $params, $forum_index_file)
-        or die "Template processing failed for 'forum.html': " . $template->error();
+    my $num_pages = @paged_threads;
 
-    return $forum_index_file;
+    for(my $i = 0; $i < @paged_threads; $i++) {
+        my $page_number = $i + 1;
+
+        my $current_file = $page_number == 1
+                         ? $forum_index_file
+                         : sprintf($paged_file_fmt, $page_number);
+
+        my $pager_html = get_pager_html($paged_file_fmt, $num_pages, $page_number);
+
+        my $template = Template->new(
+            INCLUDE_PATH => $tmpl_dir,
+            WRAPPER => 'outer.html',
+        );
+
+        my $params = {
+            category => $cat,
+            forum => $forum,
+            threads => $paged_threads[$i],
+            pager => $pager_html,
+        };
+
+        $template->process("forum.html", $params, $current_file)
+            or die "Template processing failed for 'forum.html': " . $template->error();
+    }
+
+    return;
 }
 
 sub generate_thread {
@@ -220,4 +248,28 @@ sub copy_css {
 
     system("cp $source_dir/* $destination_dir") == 0
         or die "copying css failed: $?";
+}
+
+# TODO: put this in a template maybe
+sub get_pager_html {
+    my ($path_fmt, $number_of_pages, $current_page_number) = @_;
+
+    my $output = '';
+
+    for(my $i = 1; $i <= $number_of_pages; $i++) {
+        if($i == $current_page_number) {
+            $output .= qq{<span class="current_page">$i</span>};
+        }
+        else {
+            my $page_url = sprintf($path_fmt, $i);
+
+            if($i == 1) {
+                $page_url = 'index.html';
+            }
+
+            $output .= qq{<a href="$page_url">$i</a>};
+        }
+    }
+
+    return $output;
 }

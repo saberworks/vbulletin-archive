@@ -107,7 +107,7 @@ a:hover {
     background-image: linear-gradient(rgb(43, 43, 43), black);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    margin-top: 25px;
+    margin-top: 15px;
 }
 
 .thread_row_header div {
@@ -260,6 +260,40 @@ a:hover {
     border: 1px solid black;
     border-radius: 5px;
     background-color: black;
+}
+
+/* Thread list pager */
+div.forum_pager {
+    margin: 0px;
+    margin-top: 10px;
+    text-align: right;
+    margin-bottom: 0px;
+    padding: 0px;
+    /* display: grid;
+    grid-template-columns: repeat(auto-fill, auto); */
+}
+
+.forum_pager a {
+    background-color: #1f2314;
+    display: inline-block;
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+    /* display: table-cell; */
+    text-align: center;
+    width: 3ch;
+    padding: 5px;
+}
+
+.forum_pager .current_page {
+    background-color: #3f4829;
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+    display: inline-block;
+    /* display: table-cell; */
+    text-align: center;
+    width: 3ch;
+    padding: 5px;
+    font-weight: bold;
 }
 
 /* Search form styles */

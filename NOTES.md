@@ -1,10 +1,7 @@
 # TODO TODO TODO
 
-
-
-- paging? to be worth it would need to happen on the thread list and on
-  individual threads
-
+- paging code should go in a template
+- paging on posts inside a thread
 - output a set of redirect rules for apache or nginx so old URLs can be
   redirected to the archive
 
@@ -27,6 +24,7 @@ on it, just the id
 
 # FIXED
 
+- paging on forum index / thread list pages
 - some [code] tags not working right (wasn't going to fix but it's affecting
   the entire cog forum so needs to be fixed)
 - add "go to top" link to bottom of every page
