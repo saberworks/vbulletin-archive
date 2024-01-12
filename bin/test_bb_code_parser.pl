@@ -24,6 +24,17 @@ my @tests = (
     '[quote=foo]quoted text[/quote]',
     '[spoiler]foo[/spoiler]',
     '[spoilerbox]foo[/spoilerbox]',
+    '[code]some code < >[/code]',
+    '[code]
+
+
+    some code
+    if(foo) {
+        bar;
+    }
+
+
+    [/code]',
 );
 
 foreach my $test (@tests) {

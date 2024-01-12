@@ -11,7 +11,8 @@ use VBI::Db;
 
 my $dbh = VBI::Db::get();
 
-my $HARD_LIMIT = 100;
+my $HARD_LIMIT = 10;
+# my $HARD_LIMIT = 999999999;
 
 sub get_forums {
     my $q = q{

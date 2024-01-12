@@ -116,17 +116,6 @@ because as with everything vBulletin, it's nonsenical.  Example forum urls:
 
 I mean... come on.
 
-# STUPID ANNOYING NOTES
-
-Note: the below is no longer the case, I was able to override in a child
-class, see VBI::BBCode.
-
-I couldn't figure out how to make Parse::BBCode stop escaping `&amp;`
-ampersands.  Vbulletin stores entities like `&#64;` inside their tables.  The
-Parse::BBCode module translates it into `&amp;#64;` which is nonsensical and
-doesn't render.  So I went into their code and commented out the section that
-does that.  Must research further, there has to be a better way.
-
 # LICENSE
 
 TODO

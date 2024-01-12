@@ -1,11 +1,34 @@
 # TODO TODO TODO
 
-- some [code] tags not working right
+
+
+- paging? to be worth it would need to happen on the thread list and on
+  individual threads
+
 - output a set of redirect rules for apache or nginx so old URLs can be
   redirected to the archive
 
+
+## redirect notes
+
+These are the urls that must be redirected:
+
+* /vb3/ -> /
+* /vb3/forumdisplay.php?8-Discussion-Forum -> /Main_Massassi_Forums/Discussion_Forum/index.html
+    * (for all forums)
+* /vb3/showthread.php?68318-Happy-New-Years!! -> /Main_Massassi_Forums/Discussion_Forum/68318.html
+    * (for all threads)
+* /vb3/forumdisplay.php?f=14 -> /Main_Massassi_Forums/Interactive_Story_Board/index.html
+    * (for all forums)
+
+Note: only the ?<number> parts are important for redirect matches, the crap
+that comes after the number is solely for google juice.  Don't need to match
+on it, just the id
+
 # FIXED
 
+- some [code] tags not working right (wasn't going to fix but it's affecting
+  the entire cog forum so needs to be fixed)
 - add "go to top" link to bottom of every page
 - [spoiler] tags not working at all
 - [quote] with space in name like [quote=Foo Bar:12345] (breaks Parse::BBCode)

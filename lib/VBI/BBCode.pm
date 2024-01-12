@@ -37,6 +37,7 @@ sub new {
         'color'    => { code => \&do_color,    parse => 1, class => 'inline', },
         'spoiler'  => { code => \&do_spoiler,  parse => 1, class => 'inline', },
         'spoilerbox' => { code => \&do_spoilerbox, parse => 1, class => 'block', },
+        'code'       => { code => \&do_code,       parse => 1, class => 'block', },
     );
 
     my $smilies = $class->get_smilies();
@@ -198,6 +199,20 @@ sub do_spoilerbox {
         <blockquote><small>spoiler:</small><div style="color: black; background-color: black;" onmouseover="this.style.color='white';" onmouseout="this.style.color='black'">$$content</div></blockquote>
     };
 }
+
+sub do_code {
+    my ($parser, $attr, $content) = @_;
+    $$content =~ s/<br>//g;
+    my $title = 'Code';
+    if ($attr) {
+        $title = Parse::BBCode::escape_html($attr);
+    }
+    return qq{
+        <div class="bbcode_code_header">$title:
+        <div class="bbcode_code_body"><pre>$$content</pre></div></div>
+    };
+}
+
 
 sub get_smilies {
     my $class = shift;

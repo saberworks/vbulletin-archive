@@ -244,6 +244,24 @@ a:hover {
     padding-left: 20px;
 }
 
+.bbcode_code_header {
+    /* border: 1px solid black; */
+    border-radius: 5px;
+    /* background-color: black; */
+    padding: 10px;
+    /* color: silver; */
+}
+
+.bbcode_code_body {
+    font-weight: normal;
+    padding-top: 10px;
+    padding-left: 20px;
+    font-family: monospace;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: black;
+}
+
 /* Search form styles */
 form {
     margin: 1em;
