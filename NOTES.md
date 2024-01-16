@@ -1,6 +1,7 @@
 # TODO TODO TODO
 
-??? DONE ???
+* add redirect rule from root /vb3/ to /index.html
+* document the docker stuff
 
 
 ## redirect notes
