@@ -1,9 +1,6 @@
 # TODO TODO TODO
 
-- paging code should go in a template
-- paging on posts inside a thread
-- output a set of redirect rules for apache or nginx so old URLs can be
-  redirected to the archive
+??? DONE ???
 
 
 ## redirect notes
@@ -24,6 +21,9 @@ on it, just the id
 
 # FIXED
 
+- output redirect rules for nginx so old URLs can be redirected to the archive
+- paging code should go in a template
+- paging on posts inside a thread
 - paging on forum index / thread list pages
 - some [code] tags not working right (wasn't going to fix but it's affecting
   the entire cog forum so needs to be fixed)

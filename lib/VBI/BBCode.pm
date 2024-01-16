@@ -181,6 +181,7 @@ sub do_font {
 # Example: [COLOR=#FFFFFF]text[/color]
 sub do_color {
     my ($parser, $attr, $content) = @_;
+    $attr = '' unless defined $attr;
     return qq{
         <span style="color: $attr;">$$content</span>
     };

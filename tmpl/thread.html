@@ -5,10 +5,12 @@
 [% USE date %]
 
 <div class="crumbs">
-    &#9750; <a href="../../index.html">Forums</a>
+    &#9750; <a href="[% home_relative %]/index.html">Forums</a>
     &rarr; <a href="index.html">[% forum.title %]</a>
     &rarr; [% thread.title %]
 </div>
+
+[% INCLUDE pager.html %]
 
 <div id="post_list">
     <div class="post_row_header">
@@ -45,3 +47,5 @@
         </div>
     [% END %]
 </div>
+
+[% INCLUDE pager.html %]

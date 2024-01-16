@@ -1,0 +1,21 @@
+[% IF number_of_pages > 1 %]
+    [% USE format %]
+    [% USE first_page_link = format(first_page_link_fmt) %]
+    [% USE page_link = format(page_link_fmt) %]
+
+    <div class="forum_pager">
+        [%~ FILTER collapse ~%]
+            [%~ FOREACH i IN [ 1 .. number_of_pages ] ~%]
+                [%~ IF i == current_page_number ~%]
+                    <span class="current_page">[% i %]</span>
+                [%~ ELSE ~%]
+                    [%~ SET page_url = page_link(i) ~%]
+                    [%~ IF i == 1 ~%]
+                        [%~ page_url = first_page_link(i) ~%]
+                    [%~ END ~%]
+                    <a href="[% page_url %]">[% i %]</a>
+                [%~ END ~%]
+            [%~ END ~%]
+        [%~ END ~%]
+    </div>
+[% END %]

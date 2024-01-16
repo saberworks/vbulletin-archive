@@ -18,16 +18,25 @@ use VBI::BBCode;
 use VBI::Conf;
 use VBI::Util qw/create_dir/;
 
-my $conf = VBI::Conf::get();
+# Make template::toolkit format plugin stfu
+$SIG{'__WARN__'} = sub {
+    warn $_[0] unless (
+        caller eq "Template::Plugin::Format" && $_[0] =~ /^Redundant/
+    );
+};
 
-my $global_page_size = $conf->{'global_page_size'};
+my $conf = VBI::Conf::get();
 
 my $json_dir = $conf->{'json_dir'};
 my $html_dir = $conf->{'html_dir'};
 my $tmpl_dir = $conf->{'tmpl_dir'};
 
 warn Dumper($conf);
-warn "TMPL DIR: $tmpl_dir";
+
+# $redirect_fh must remain in global context for now since there are some
+# functions that depend on it.
+# TODO: get rid of the global fh
+my $redirect_fh = create_redirect_file("$html_dir/nginx_redirects.conf");
 
 copy_smileys($conf->{'smileys_dir'}, $html_dir, '/smileys');
 copy_css('css', $html_dir);
@@ -65,6 +74,7 @@ foreach my $cat (sort by_displayorder @$categories) {
         my $threads = parse_json($forum_json_dir, sprintf("forum_%d_thread_list.json", $forum_id));
 
         generate_forum_index($cat, $forum, $threads, $forum_html_dir);
+        generate_redirects($cat, $forum, $threads);
 
         foreach my $thread (@$threads) {
             my $thread_id = $thread->{'threadid'};
@@ -79,10 +89,30 @@ foreach my $cat (sort by_displayorder @$categories) {
 
             generate_thread($cat, $forum, $thread, $posts, $forum_html_dir);
         }
+    }
+}
 
-        # TODO
-        # Generate apache redirects ?? or nginx redirects ?? to maintain old
-        # urls
+end_redirect_file();
+
+sub generate_redirects {
+    my ($cat, $forum, $threads) = @_;
+
+    my $category_slug = $cat->{'slug'};
+    my $forum_id = $forum->{'forumid'};
+    my $forum_slug = $forum->{'slug'};
+
+    my $rule = qq[~^/vb3/forumdisplay\\.php\\?${forum_id}-(.*)\$  /${category_slug}/${forum_slug}/index.html;];
+
+    add_redirect_rule($rule);
+
+    my $thread_rule_fmt = qq[~^/vb3/showthread\\.php\\?%d-(.*)\$ /%s/%s/thread_%d_page_1.html;];
+
+    foreach my $thread (@$threads) {
+        my $thread_id = $thread->{'threadid'};
+
+        add_redirect_rule(
+            sprintf($thread_rule_fmt, $thread_id, $category_slug, $forum_slug, $thread_id)
+        );
     }
 }
 
@@ -131,17 +161,19 @@ sub generate_index_file {
 sub generate_forum_index {
     my ($cat, $forum, $threads, $forum_html_dir) = @_;
 
+    my $thread_list_page_size = $conf->{'thread_list_page_size'};
+
     my $threads_copy = dclone($threads);
 
     my $forum_id = $forum->{'forumid'};
 
-    my $forum_index_file = $forum_html_dir . "/index.html";
-    my $paged_file_fmt = $forum_html_dir . "/forum_${forum_id}_page_%d.html";
+    my $forum_index_file = "index.html";
+    my $paged_file_fmt = "forum_${forum_id}_page_%d.html";
 
     my @paged_threads;
 
-    # split thread list into chunks of $global_page_size for paging
-    while (my @next_100 = splice @$threads_copy, 0, $global_page_size) {
+    # split thread list into chunks of $thread_list_page_size for paging
+    while (my @next_100 = splice @$threads_copy, 0, $thread_list_page_size) {
         push @paged_threads, \@next_100;
     }
 
@@ -151,10 +183,8 @@ sub generate_forum_index {
         my $page_number = $i + 1;
 
         my $current_file = $page_number == 1
-                         ? $forum_index_file
-                         : sprintf($paged_file_fmt, $page_number);
-
-        my $pager_html = get_pager_html($paged_file_fmt, $num_pages, $page_number);
+                         ? "$forum_html_dir/$forum_index_file"
+                         : $forum_html_dir . '/' . sprintf($paged_file_fmt, $page_number);
 
         my $template = Template->new(
             INCLUDE_PATH => $tmpl_dir,
@@ -165,7 +195,10 @@ sub generate_forum_index {
             category => $cat,
             forum => $forum,
             threads => $paged_threads[$i],
-            pager => $pager_html,
+            first_page_link_fmt => $forum_index_file,
+            page_link_fmt => $paged_file_fmt,
+            number_of_pages => $num_pages,
+            current_page_number => $page_number,
         };
 
         $template->process("forum.html", $params, $current_file)
@@ -178,28 +211,52 @@ sub generate_forum_index {
 sub generate_thread {
     my ($cat, $forum, $thread, $posts, $forum_html_dir) = @_;
 
+    my $thread_page_size = $conf->{'thread_page_size'};
+
     parse_bbcode($posts, 'pagetext', 'post_html');
 
     my $thread_id = $thread->{'threadid'};
+    my $forum_id = $forum->{'forumid'};
 
-    my $thread_file = $forum_html_dir . '/' . $thread_id . '.html';
+    my $thread_file_fmt = "thread_${thread_id}_page_%d.html";
 
-    my $template = Template->new(
-        INCLUDE_PATH => $tmpl_dir,
-        WRAPPER => 'outer.html',
-    );
+    my $posts_copy = dclone($posts);
 
-    my $params = {
-        category => $cat,
-        forum => $forum,
-        thread => $thread,
-        posts => $posts,
-    };
+    my @paged_posts;
 
-    $template->process("thread.html", $params, $thread_file)
-        or die "Template processing failed for 'thread.html': " . $template->error();
+    # split post list into chunks of $thread_page_size for paging
+    while (my @next_n = splice @$posts_copy, 0, $thread_page_size) {
+        push @paged_posts, \@next_n;
+    }
 
-    return $thread_file;
+    my $num_pages = @paged_posts;
+
+    for(my $i = 0; $i < @paged_posts; $i++) {
+        my $page_number = $i + 1;
+
+        my $current_file = $forum_html_dir . '/' . sprintf($thread_file_fmt, $page_number);
+
+        my $template = Template->new(
+            INCLUDE_PATH => $tmpl_dir,
+            WRAPPER => 'outer.html',
+        );
+
+        my $params = {
+            category => $cat,
+            forum => $forum,
+            thread => $thread,
+            posts => $paged_posts[$i],
+            first_page_link_fmt => $thread_file_fmt,
+            page_link_fmt => $thread_file_fmt,
+            number_of_pages => $num_pages,
+            current_page_number => $page_number,
+        };
+
+        $template->process("thread.html", $params, $current_file)
+            or die "Template processing failed for 'thread.html': " . $template->error();
+    }
+
+    return 1;
 }
 
 #
@@ -207,14 +264,15 @@ sub generate_thread {
 #
 # $output_key is the key in the $post which will contain the _parsed_ input
 #             after this function has run
+#
 sub parse_bbcode {
     my ($posts, $source_key, $output_key) = @_;
 
     foreach my $post (@$posts) {
         if(!$post->{$source_key}) {
             my $post_id = $post->{'postid'};
-            warn "Unable to find $source_key in $post_id, so unable to parse bb code, SKIPPING";
-            $post->{$output_key} = $post->{$source_key};
+            warn "\t\tUnable to find $source_key in $post_id, so unable to parse bb code";
+            $post->{$output_key} = "The content of this post is missing.";
             next;
         }
 
@@ -250,26 +308,26 @@ sub copy_css {
         or die "copying css failed: $?";
 }
 
-# TODO: put this in a template maybe
-sub get_pager_html {
-    my ($path_fmt, $number_of_pages, $current_page_number) = @_;
+# returns a file handle that must be added to global scope :(
+sub create_redirect_file {
+    my $path = shift;
 
-    my $output = '';
+    open my $fh, '>', $path or die "Unable to open redirect file ($path): $!";
 
-    for(my $i = 1; $i <= $number_of_pages; $i++) {
-        if($i == $current_page_number) {
-            $output .= qq{<span class="current_page">$i</span>};
-        }
-        else {
-            my $page_url = sprintf($path_fmt, $i);
+    say $fh qq[map \$request_uri \$redirect {];
 
-            if($i == 1) {
-                $page_url = 'index.html';
-            }
+    return $fh;
+}
 
-            $output .= qq{<a href="$page_url">$i</a>};
-        }
-    }
+# adds a redirect rule to the global $redirect_fh handle :(
+sub add_redirect_rule {
+    my $rule = shift;
 
-    return $output;
+    say $redirect_fh "    " . $rule;
+}
+
+# closes the global $redirect_fh handle :(
+sub end_redirect_file {
+    say $redirect_fh "}";
+    close $redirect_fh;
 }

@@ -5,11 +5,11 @@
 [% USE date %]
 
 <div class="crumbs">
-    &#9750; <a href="../../index.html">Forums</a> &rarr; [% forum.title %]<br>
+    &#9750; <a href="[% home_relative %]/index.html">Forums</a> &rarr; [% forum.title %]<br>
     <span class="forum_description">[% forum.description %]</span>
 </div>
 
-<div class="forum_pager">[% pager %]</div>
+[% INCLUDE pager.html %]
 
 <div id="thread_list">
     <div class="thread_row_header">
@@ -21,7 +21,7 @@
     [% FOREACH thread IN threads %]
         <div class="thread_row">
             <div>
-                <a class="thread_title" href="[% thread.threadid %].html">[% thread.title %]</a><br>
+                <a class="thread_title" href="thread_[% thread.threadid %]_page_1.html">[% thread.title %]</a><br>
                 <span class="post_info">
                     [% thread.postusername %],
                     [% date.format(thread.dateline, '%Y-%m-%d, %-I:%M %p') %]
@@ -39,4 +39,4 @@
     [% END %]
 </div>
 
-<div class="forum_pager">[% pager %]</div>
+[% INCLUDE pager.html %]

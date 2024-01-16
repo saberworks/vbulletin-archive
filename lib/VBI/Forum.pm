@@ -11,7 +11,7 @@ use VBI::Db;
 
 my $dbh = VBI::Db::get();
 
-# my $HARD_LIMIT = 10000;
+# my $HARD_LIMIT = 1000;
 my $HARD_LIMIT = 999999999;
 
 sub get_forums {
@@ -64,7 +64,7 @@ sub get_posts {
                p.htmlstate, pp.hasimages, pp.dateline as parsed_dateline,
                u.usertitle, u.posts, sp.signatureparsed
           FROM post p
-          JOIN user u ON p.userid = u.userid
+     LEFT JOIN user u ON p.userid = u.userid
      LEFT JOIN sigparsed sp ON (u.userid = sp.userid AND sp.styleid = ?)
      LEFT JOIN postparsed pp ON (p.postid = pp.postid AND pp.styleid = ?)
          WHERE threadid = ?
@@ -121,7 +121,7 @@ sub get_all_attachments {
          AND contenttypeid = 1
          AND state = 'visible'
     ORDER BY a.attachmentid
-       LIMIT 99999999999
+       LIMIT $HARD_LIMIT
     };
 
     my $sth = $dbh->prepare($q);
