@@ -9,7 +9,7 @@ my $dbh = VBI::Db::get();
 
 # some queries that should run before export to clean up any wonky data
 
-# Strip the childsplay charity custom user title links after all (otherwise
+# Strip the childsplay charity "alt" from user title links (otherwise
 # I can't reliably do the next search and replace because some values end up
 # too wide for the stupid column!
 my $q0 = q{

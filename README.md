@@ -70,28 +70,6 @@ modify the database settings to connect to your mysql database.
 I strongly recommend you do all work on a copy of the database and connect
 as a user that only has READONLY access.
 
-## Start mysql (docker)
-
-I have my database copy running under docker.  It was created like this:
-
-```
-docker run -it -v/home/brian/sites/forums.massassi.net/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -p 3306:3306 --name mysql-forums --network mysql-network -e MYSQL_ROOT_PASSWORD=<REPLACEME> -e MYSQL_DATABASE=<REPLACEME> -d mysql:8.2.0
-```
-
-You'll have to adjust the volume mount paths (`-v` argument above).  By default,
-when the mysql container runs, it will look inside the container at path
-`/docker-entrypoint-initdb.d` for any `.sql` files, and will load them into
-the database by default.  I dropped my database dump (which must include
-attachments in the database if you want this to work!) in there as
-`massfor_forums-2023-12-21-with-attachments.sql` (it can be named anything but
-it must have a `.sql` extension).
-
-Assuming the container has been started previously, and then turned off.
-
-```
-docker start mysql-forums
-```
-
 # HOW IT WORKS
 
 Step 1: run `perl bin/export.pl`
@@ -109,12 +87,24 @@ My intention is also to automate writing apache or nginx redirect rules that
 will help search engines recognize that the pages have moved permanently.
 This is likely only useful if you're archiving and then taking down the old
 forums.  I didn't want to try to preserve the URL structure on the filesystem
-because as with everything vBulletin, it's nonsenical.  Example forum urls:
+because they're too weird.  Example forum urls:
 
 * https://forums.massassi.net/vb3/forumdisplay.php?8-Discussion-Forum
 * https://forums.massassi.net/vb3/showthread.php?68318-Happy-New-Years!!
 
-I mean... come on.
+(would have had to output a file called
+`/vb3/forumdisplay.php?8-Discussion-Forum` and somehow override the `?`
+indicating that the rest is a query string?)
+
+# Dockerfile
+
+There's now a dockerfile that's useful for serving the archive using nginx.
+There's also a set of nginx redirect rules to redirect all the old threads
+to the new locations.  You'll have to edit generate_html.pl to fix the
+redirect paths (my forums were at `/vb3/` but I'm serving the archive from
+`/` so all the old `/vb3/<foo>` urls redirect to the archive versions at
+the root).  I should have put the config for this in the config file but I
+ran out of motivation to keep it clean.
 
 # LICENSE
 

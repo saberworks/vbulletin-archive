@@ -47,7 +47,7 @@ sub get_threads {
           FROM thread
          WHERE forumid = ?
            AND visible = 1
-      ORDER BY lastpost DESC
+      ORDER BY sticky DESC, lastpost DESC
          LIMIT $HARD_LIMIT
     };
 

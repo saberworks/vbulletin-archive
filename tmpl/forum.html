@@ -21,6 +21,7 @@
     [% FOREACH thread IN threads %]
         <div class="thread_row">
             <div>
+                [% IF thread.sticky %]Sticky:[% END %]
                 <a class="thread_title" href="thread_[% thread.threadid %]_page_1.html">[% thread.title %]</a><br>
                 <span class="post_info">
                     [% thread.postusername %],

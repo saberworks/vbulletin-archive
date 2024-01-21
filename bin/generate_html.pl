@@ -40,6 +40,7 @@ my $redirect_fh = create_redirect_file("$html_dir/nginx_redirects.conf");
 
 copy_smileys($conf->{'smileys_dir'}, $html_dir, '/smileys');
 copy_css('css', $html_dir);
+copy_images('images', $html_dir);
 
 my $unsorted_categories = parse_json($json_dir, "forum_categories.json");
 my $unsorted_forums = parse_json($json_dir, "forums.json");
@@ -308,6 +309,15 @@ sub copy_css {
         or die "copying css failed: $?";
 }
 
+sub copy_images {
+    my ($source_dir, $html_dir) = @_;
+
+    my $destination_dir = create_dir($html_dir, 'images');
+
+    system("cp $source_dir/* $destination_dir") == 0
+        or die "copying images failed: $?";
+}
+
 # returns a file handle that must be added to global scope :(
 sub create_redirect_file {
     my $path = shift;
@@ -315,6 +325,9 @@ sub create_redirect_file {
     open my $fh, '>', $path or die "Unable to open redirect file ($path): $!";
 
     say $fh qq[map \$request_uri \$redirect {];
+    say $fh qq[    /vb3/ /index.html;];
+    say $fh qq[    /vb3 /index.html;];
+    say $fh qq[    / /index.html;];
 
     return $fh;
 }

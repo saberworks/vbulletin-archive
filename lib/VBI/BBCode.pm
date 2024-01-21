@@ -222,7 +222,7 @@ sub get_smilies {
         '.('           => '1i_frown.gif',
         ':tinfoil:'    => 'emot-tinfoil.gif',
         ':suicide:'    => 'emot-suicide.gif',
-        ':awesome:'    => 'emot-awesom.gif',
+        ':awesome:'    => 'emot-awesome.gif',
         ':neckbeard:'  => 'emot-neckbeard.gif',
         ':colbert:'    => 'emot-colbert.gif',
         ':hist101:'    => 'emot-hist101.gif',

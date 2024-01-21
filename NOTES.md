@@ -1,6 +1,5 @@
 # TODO TODO TODO
 
-* add redirect rule from root /vb3/ to /index.html
 * document the docker stuff
 
 
@@ -22,6 +21,8 @@ on it, just the id
 
 # FIXED
 
+- put stickies at the top, and a note about them being sticky
+- add redirect rule from root /vb3/ to /index.html
 - output redirect rules for nginx so old URLs can be redirected to the archive
 - paging code should go in a template
 - paging on posts inside a thread
