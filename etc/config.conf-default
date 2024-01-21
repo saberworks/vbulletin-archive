@@ -3,6 +3,10 @@ db_name <REPLACEME> # database name inside the host
 db_user <REPLACEME> # database user
 db_pass <REPLACEME> # database password
 
+# forums and threads will be displayed in chunks of ...
+thread_list_page_size 500
+thread_page_size 50
+
 # A directory containing all the smileys
 # This will be copied into html/smileys directory
 smileys_dir smileys
