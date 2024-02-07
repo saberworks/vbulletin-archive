@@ -19,6 +19,14 @@ sub get {
 
             $cf{$key} = Cwd::realpath("$Bin/../$value");
         }
+
+        if($key eq 'copy_dirs') {
+            my $value = $cf{$key};
+
+            my @dirs = split /, /, $value;
+
+            $cf{$key} = \@dirs;
+        }
     }
 
     return \%cf;

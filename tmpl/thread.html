@@ -18,7 +18,7 @@
     </div>
 
     [% FOREACH post IN posts %]
-        <div class="post_date_row" id="post_[% loop.index %]">[% date.format(post.dateline, '%Y-%m-%d, %-I:%M %p') %] <span style="text-align: right;"><strong><a href="#post_[% loop.index %]">#[% loop.index %]</a></strong></span></div>
+        <div class="post_date_row" id="post[% post.postid %]">[% date.format(post.dateline, '%Y-%m-%d, %-I:%M %p') %] <span style="text-align: right;"><strong><a href="#post[% post.postid %]">#[% (thread_page_size * (current_page_number - 1)) + loop.index + 1 %]</a></strong></span></div>
         <div class="post_row">
             <div class="post_user_info">
                 <div class="post_user">[% post.username %]</div>

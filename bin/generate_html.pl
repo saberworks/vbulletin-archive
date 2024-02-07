@@ -38,9 +38,13 @@ warn Dumper($conf);
 # TODO: get rid of the global fh
 my $redirect_fh = create_redirect_file("$html_dir/nginx_redirects.conf");
 
-copy_smileys($conf->{'smileys_dir'}, $html_dir, '/smileys');
-copy_css('css', $html_dir);
-copy_images('images', $html_dir);
+# In conf, you can specify a bunch of directories that will be copied from
+# src/<dir> to <html_dir>/<dir>.  This is useful for smilies, css, images,
+# or any other arbitrary directory (in massassi's case, there was an html/
+# directory that had images that were commonly linked to).
+foreach my $dir (@{$conf->{'copy_dirs'}}) {
+    copy_dir($dir, $html_dir);
+}
 
 my $unsorted_categories = parse_json($json_dir, "forum_categories.json");
 my $unsorted_forums = parse_json($json_dir, "forums.json");
@@ -251,6 +255,7 @@ sub generate_thread {
             page_link_fmt => $thread_file_fmt,
             number_of_pages => $num_pages,
             current_page_number => $page_number,
+            thread_page_size => $thread_page_size,
         };
 
         $template->process("thread.html", $params, $current_file)
@@ -291,31 +296,13 @@ sub _parse_bbcode {
     return $rendered;
 }
 
-sub copy_smileys {
-    my ($source_dir, $html_dir, $smilies_dir) = @_;
-
-    my $destination_dir = create_dir($html_dir, $smilies_dir);
-
-    system("cp $source_dir/* $destination_dir/") == 0
-        or die "copying smileys failed: $?";
-}
-
-sub copy_css {
+sub copy_dir {
     my ($source_dir, $html_dir) = @_;
 
-    my $destination_dir = create_dir($html_dir, 'css');
+    my $destination_dir = create_dir($html_dir, $source_dir);
 
-    system("cp $source_dir/* $destination_dir") == 0
-        or die "copying css failed: $?";
-}
-
-sub copy_images {
-    my ($source_dir, $html_dir) = @_;
-
-    my $destination_dir = create_dir($html_dir, 'images');
-
-    system("cp $source_dir/* $destination_dir") == 0
-        or die "copying images failed: $?";
+    system("cp -r $source_dir/* $destination_dir") == 0
+        or die "copying $source_dir failed: $?";
 }
 
 # returns a file handle that must be added to global scope :(
