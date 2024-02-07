@@ -21,6 +21,9 @@ on it, just the id
 
 # FIXED
 
+- add post number and ability to link to individual posts
+- google search form should be HTTPS
+- put the favicon in the html/images folder and make sure it shows up
 - put stickies at the top, and a note about them being sticky
 - add redirect rule from root /vb3/ to /index.html
 - output redirect rules for nginx so old URLs can be redirected to the archive

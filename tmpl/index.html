@@ -6,7 +6,6 @@
     <div class="category_row">
         <div>[% category.title %]</div>
         <div class="stats_header">Threads / Posts</div>
-        <div></div>
     </div>
 
     [% FOREACH forum IN forums %]
@@ -20,7 +19,6 @@
                     Threads: [% forum.threadcount.chunk(-3).join(',') %]<br>
                     Posts: [% forum.replycount.chunk(-3).join(',') %]
                 </div>
-                <div></div>
             </div>
         [% END %]
     [% END %]
