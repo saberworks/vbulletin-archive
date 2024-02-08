@@ -72,18 +72,23 @@ as a user that only has READONLY access.
 
 # HOW IT WORKS
 
+Step 0: possibly run `perl bin/clean_database.pl`
+
+Read the script and possibly modify it for your needs.  Or just ignore it.  In
+my case it was used to fix up image paths in custom user titles.
+
 Step 1: run `perl bin/export.pl`
 
 This will query your database and dump a bunch of json into the `json_dir` you
 configured in `config.conf`.  It will also dump all attachments to the
-`attachments/` folder (TODO: need to make that configurable, I guess).
+`<html_dir>/attachments/` folder.
 
 Step 2: run `perl bin/generate_html.pl`
 
 This will process all the json files and generate a forums index, an index
 page for each forum, an thread page for every thread.
 
-My intention is also to automate writing apache or nginx redirect rules that
+It also writes a set of nginx redirect rules that
 will help search engines recognize that the pages have moved permanently.
 This is likely only useful if you're archiving and then taking down the old
 forums.  I didn't want to try to preserve the URL structure on the filesystem
@@ -96,6 +101,10 @@ because they're too weird.  Example forum urls:
 `/vb3/forumdisplay.php?8-Discussion-Forum` and somehow override the `?`
 indicating that the rest is a query string?)
 
+The nginx rules are output to `<html_dir>/nginx_redirects.conf`.  You will
+have to integrate this file into your nginx config, probably with an `include`
+statement.
+
 # Dockerfile
 
 There's now a dockerfile that's useful for serving the archive using nginx.
@@ -106,6 +115,10 @@ redirect paths (my forums were at `/vb3/` but I'm serving the archive from
 the root).  I should have put the config for this in the config file but I
 ran out of motivation to keep it clean.
 
+# Example
+
+You can see the static archive of my forums here: https://forums.massassi.net/
+
 # LICENSE
 
-TODO
+Please see LICENSE.md.
