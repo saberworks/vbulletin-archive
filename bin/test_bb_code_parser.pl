@@ -25,6 +25,8 @@ my @tests = (
     '[spoiler]foo[/spoiler]',
     '[spoilerbox]foo[/spoilerbox]',
     '[code]some code < >[/code]',
+    '[FONT=Century Gothic]frametime[/FONT]',
+    '[FONT=verdana]frametime[/FONT]',
     '[code]
 
 
