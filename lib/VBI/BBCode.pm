@@ -3,6 +3,8 @@ package VBI::BBCode;
 use warnings;
 use strict;
 
+use feature qw/say/;
+
 use Data::Dumper;
 
 use parent 'Parse::BBCode';
@@ -32,10 +34,11 @@ sub new {
         'fliptext' => { code => \&do_fliptext, parse => 1, class => 'block', },
         'youtube'  => { code => \&do_youtube,  parse => 1, class => 'block', },
         'video'    => { code => \&do_video,    parse => 1, class => 'block', },
+        'font'     => { code => \&do_font,     parse => 1, class => 'block', },
         '-'        => { code => \&do_strike,   parse => 1, class => 'inline', },
-        'font'     => { code => \&do_font,     parse => 1, class => 'inline', },
         'color'    => { code => \&do_color,    parse => 1, class => 'inline', },
         'spoiler'  => { code => \&do_spoiler,  parse => 1, class => 'inline', },
+        'hr'       => { code => \&do_hr,       parse => 1, class => 'inline', },
         'spoilerbox' => { code => \&do_spoilerbox, parse => 1, class => 'block', },
         'code'       => { code => \&do_code,       parse => 1, class => 'block', },
     );
@@ -171,6 +174,7 @@ sub do_strike {
 }
 
 # Example: [FONT=verdana]text[/font]
+# Example: [FONT=Century Gothic]frametime[/FONT]
 sub do_font {
     my ($parser, $attr, $content) = @_;
     return qq{
@@ -214,6 +218,13 @@ sub do_code {
     };
 }
 
+# Example: [HR][/HR]
+sub do_hr {
+    my ($parser, $attr, $content) = @_;
+    return qq{
+        <hr>
+    };
+}
 
 sub get_smilies {
     my $class = shift;
@@ -265,7 +276,8 @@ sub get_smilies {
 # semi-colon followed by a number that's added to an attribute (this was
 # used by vbulletin to link to the quoted-user's profile page).
 #
-# Example: [quote=Bob Barker;1234
+# Example: [quote=Bob Barker;1234]foo[/quote]
+# Example: [font=century gothic]foo[/font]
 sub parse_attributes {
     my ($self, %args) = @_;
     my $text = $args{text};
@@ -293,6 +305,12 @@ sub parse_attributes {
         }
         my @array;
         if (length($attribute_quote) == 1) {
+            # get rid of spaces in font names, it screws up the rest of the
+            # processing below, and I'm tired of trying to figure out why
+            if($tagname eq 'font') {
+                $attr =~ s/\s*//g;
+            }
+
             #if ($attr =~ s/^(?:$attribute_quote(.+?)$attribute_quote(?:\s+|$)|(.*?)(?:\s+|$))//) {
             if ($attr =~ s/^(?:$attribute_quote(.+?)$attribute_quote(?:\s+|$)|(.*?)(?:\;.*$)|(.*?)(?:\s+|$))//) {
                 my $val;
