@@ -1,4 +1,4 @@
-# What the hell is this?
+# Archive vBulletin 4.x.x to static HTML files
 
 This is a code dump of what I'm working on archive my vBulletin v4.2.3 forums.
 There is no included tool that will let me archive everything to static pages.
