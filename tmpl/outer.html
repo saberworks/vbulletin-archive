@@ -14,6 +14,18 @@
 
 <a name="top"></a>
 
+<script>
+    const today = new Date();
+
+    // months in js "Date" are zero-based
+    if(22 == today.getDate() && (10 - 1) == today.getMonth()) {
+        document.currentScript.insertAdjacentHTML(
+            'beforebegin',
+            '<div class="birthday">Happy Birthday, happydud!</div>'
+        );
+    }
+</script>
+
 <p class="archive_note">
 This is the static archive of the Massassi Forums.  The forums are
 closed indefinitely.  Thanks for all the memories!<br><br>

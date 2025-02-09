@@ -260,6 +260,11 @@ sub generate_thread {
 
         $template->process("thread.html", $params, $current_file)
             or die "Template processing failed for 'thread.html': " . $template->error();
+
+        # set the file create and modified time to the original thread time
+        my $last_post_timestamp = $thread->{'lastpost'};
+        utime($last_post_timestamp, $last_post_timestamp, $current_file) ||
+            warn "Unable to set created/modified timestamp on $current_file: $!";
     }
 
     return 1;

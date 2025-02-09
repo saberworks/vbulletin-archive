@@ -18,6 +18,17 @@ a:hover {
     text-decoration: underline;
 }
 
+/* Happy Birthday, happydud! Styles */
+.birthday {
+    color: silver;
+    border-radius: 5px;
+    width: 70%;
+    border: 1px solid gold;
+    margin: 1em;
+    margin-top: 0em;
+    padding: 1em;
+}
+
 /* Archive Note Styles */
 .archive_note {
     color: silver;
